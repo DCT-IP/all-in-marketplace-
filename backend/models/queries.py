@@ -1,10 +1,16 @@
-# Central place for queries (use later if needed)
+from db import cursor, db
 
-GET_ALL_PRODUCTS = "SELECT * FROM inventory"
+def get_all_users():
+    cursor.execute("SELECT * FROM users")
+    return cursor.fetchall()
 
-GET_USER_CART = """
-SELECT i.product_name, sc.quantity
-FROM shopping_cart sc
-JOIN inventory i ON sc.product_id = i.product_id
-WHERE sc.user_id = %s
-"""
+def get_all_products():
+    cursor.execute("SELECT * FROM inventory")
+    return cursor.fetchall()
+
+def add_user(username):
+    cursor.execute(
+        "INSERT INTO users (username, date_of_join) VALUES (%s, CURDATE())",
+        (username,)
+    )
+    db.commit()

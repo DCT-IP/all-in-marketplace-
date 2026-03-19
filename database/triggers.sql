@@ -31,3 +31,15 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+DELIMITER $$
+
+CREATE TRIGGER update_last_purchase
+AFTER INSERT ON orders
+FOR EACH ROW
+UPDATE users
+SET last_item_purchased = NEW.product_id
+WHERE user_id = NEW.user_id;
+
+DELIMITER;
+
