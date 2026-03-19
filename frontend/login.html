@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>Login</h1>
+
+<input type="text" id="username" placeholder="Enter username">
+<button onclick="login()">Login</button>
+
+<script>
+function login() {
+    const username = document.getElementById('username').value;
+    
+    // For demo: just store user_id = 1
+    localStorage.setItem('user_id', 1);
+
+    alert("Logged in as " + username);
+    window.location.href = "index.html";
+}
+</script>
+
+</body>
+</html>
