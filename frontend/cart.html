@@ -2,7 +2,8 @@
 <html>
 <head>
     <title>Cart</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
 
@@ -10,10 +11,7 @@
 
 <div id="cart"></div>
 
-<script src="script.js"></script>
-<script>
-    loadCart();
-</script>
+<button onclick="goHome()">Back to Products</button>
 
 </body>
 </html>

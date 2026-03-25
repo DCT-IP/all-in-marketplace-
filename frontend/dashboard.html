@@ -2,7 +2,8 @@
 <html>
 <head>
     <title>Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
 
@@ -10,7 +11,8 @@
 
 <p>Welcome!</p>
 
-<a href="index.html">Go to Marketplace</a>
+<button onclick="goHome()">Go to Marketplace</button>
+<button onclick="goToCart()">Go to Cart</button>
 
 </body>
 </html>

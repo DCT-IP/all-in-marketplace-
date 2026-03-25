@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seller Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script defer src="{{ url_for('static', filename='seller.js') }}"></script>
+</head>
+<body>
+
+<h1>Seller Dashboard</h1>
+<h3>Welcome Seller</h3>
+
+<button onclick="goHome()">Home</button>
+
+<div id="stats">
+    <h2>Analytics</h2>
+    <p>Total Products: <span id="total_products"></span></p>
+    <p>Total Orders: <span id="total_orders"></span></p>
+</div>
+
+<h2>Your Products</h2>
+<div id="seller_products"></div>
+
+</body>
+</html>
