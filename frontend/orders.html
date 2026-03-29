@@ -1,0 +1,21 @@
+<h2>Your Orders</h2>
+<div id="orders"></div>
+
+<script>
+const userId = localStorage.getItem("user_id");
+
+fetch(`/orders/${userId}`)
+.then(res => res.json())
+.then(data => {
+    const container = document.getElementById("orders");
+
+    data.forEach(o => {
+        container.innerHTML += `
+            <div>
+                <p>Order #${o.id}</p>
+                <p>Total: ₹${o.total_amount}</p>
+            </div>
+        `;
+    });
+});
+</script>
