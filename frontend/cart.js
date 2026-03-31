@@ -17,7 +17,8 @@ async function loadCart() {
         container.innerHTML += `
         <div class="cart-item">
 
-            <img src="https://via.placeholder.com/100">
+            <img src="${item.image_url}" 
+     onerror="this.src='https://via.placeholder.com/200x150?text=No+Image'">
 
             <div class="cart-details">
                 <h4>${item.name}</h4>

@@ -96,19 +96,45 @@ def seller(seller_id):
 
 
 @app.route("/orders/<int:user_id>")
-def orders(user_id):
-    return jsonify(get_orders(user_id))
+def get_orders(user_id):
+    data = get_orders_by_user(user_id)
+    return jsonify(data)
 
 
 @app.route("/checkout/<int:user_id>", methods=["POST"])
 def checkout(user_id):
-    result = process_checkout(user_id)
-    
-    if result["status"] == "error":
-        return jsonify({"error": result["message"]}), 400
+    try:
+        data = request.get_json()
 
-    return jsonify({"message": "Order placed successfully"})
+        phone = data.get("phone")
+        address = data.get("address")
 
+        result = process_checkout(user_id, phone, address)
+
+        if result["status"] == "error":
+            return jsonify({"error": result["message"]}), 400
+
+        return jsonify({"message": "Order placed successfully"}), 200
+
+    except Exception as e:
+        print("CHECKOUT ERROR:", e)
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/user/<int:user_id>")
+def get_user_details(user_id):
+    return jsonify(get_user_by_id(user_id))
+
+@app.route("/order-success")
+def order_success():
+    return render_template("order_success.html")
+
+@app.route("/orders-page")
+def orders_page():
+    return render_template("orders.html")
+
+@app.route("/success")
+def success():
+    return render_template("success.html")
 
 if __name__ == '__main__':
     app.run(debug=True)

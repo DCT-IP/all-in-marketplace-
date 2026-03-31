@@ -1,21 +1,24 @@
-<h2>Your Orders</h2>
-<div id="orders"></div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Orders</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+
+<div class="cart-container">
+    <h2>My Orders</h2>
+
+    <div id="orders-container"></div>
+</div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 
 <script>
-const userId = localStorage.getItem("user_id");
-
-fetch(`/orders/${userId}`)
-.then(res => res.json())
-.then(data => {
-    const container = document.getElementById("orders");
-
-    data.forEach(o => {
-        container.innerHTML += `
-            <div>
-                <p>Order #${o.id}</p>
-                <p>Total: ₹${o.total_amount}</p>
-            </div>
-        `;
-    });
+document.addEventListener("DOMContentLoaded", () => {
+    if (typeof loadOrders === "function") {
+        loadOrders();
+    }
 });
 </script>
+</body>
+</html>

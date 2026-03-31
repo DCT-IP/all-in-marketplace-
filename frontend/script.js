@@ -2,7 +2,7 @@ const BASE_URL = "http://127.0.0.1:5000";
 
 const protectedRoutes = ["/cart", "/dashboard"];
 const path = window.location.pathname;
-
+const role = localStorage.getItem("role");
 const userId = localStorage.getItem("user_id");
 
 if (path.startsWith("/dashboard") && role !== "seller") {
@@ -89,6 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
     setupFilter();
     setupSort();
     loadCart();
+    loadUserDetails();
+    loadOrders();
 
     const loginForm = document.getElementById("login-form");
     if (loginForm) {
@@ -211,7 +213,7 @@ async function loadCart() {
 
     <div class="cart-left">
         <img src="${item.image_url}" 
-     onerror="this.src='https://picsum.photos/200/150'">
+     onerror="this.src='https://via.placeholder.com/200x150?text=No+Image'">
 
         <div class="cart-details">
             <h4>${item.product_name}</h4>
@@ -235,6 +237,60 @@ async function loadCart() {
 
     const totalEl = document.getElementById("totalPrice");
     if (totalEl) totalEl.innerText = total;
+}
+
+async function signup() {
+    const username = document.getElementById("username")?.value;
+    const role = document.getElementById("role")?.value;
+
+    if (!username || !role) {
+        alert("Fill all fields");
+        return;
+    }
+
+    const res = await fetch(`${BASE_URL}/signup`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ username, role })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.user_id) {
+        localStorage.setItem("user_id", data.user_id);
+        localStorage.setItem("role", data.role);
+
+        window.location.href = data.role === "seller" ? "/dashboard" : "/";
+    } else {
+        alert(data.error || "Signup failed");
+    }
+}
+
+async function login() {
+    const username = document.getElementById("username")?.value;
+    const role = document.getElementById("role")?.value;
+
+    if (!username || !role) {
+        alert("Fill all fields");
+        return;
+    }
+
+    const res = await fetch(`${BASE_URL}/login`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ username, role })
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.user_id) {
+        localStorage.setItem("user_id", data.user_id);
+        localStorage.setItem("role", data.role);
+
+        window.location.href = data.role === "seller" ? "/dashboard" : "/";
+    } else {
+        alert(data.error || "Login failed");
+    }
 }
 
 async function updateQty(productId, change) {
@@ -264,39 +320,6 @@ async function removeItem(productId) {
     loadCart();
 }
 
-// async function handleLogin(event) {
-//     event.preventDefault();
-
-//     const username = document.getElementById("username")?.value;
-//     const role = document.getElementById("role")?.value;
-
-//     try {
-//         const res = await fetch(`${BASE_URL}/login`, {
-//             method: "POST",
-//             headers: {"Content-Type": "application/json"},
-//             body: JSON.stringify({ username, role })
-//         });
-
-//         const data = await res.json();
-
-//         if (res.ok && data.user_id) {
-//             localStorage.setItem("user_id", data.user_id);
-//             localStorage.setItem("role", data.role);
-
-//             if (data.role === "seller") {
-//                 window.location.href = "/dashboard";
-//             } else {
-//                 window.location.href = "/";
-//             }
-//         } else {
-//             alert("Invalid login");
-//         }
-
-//     } catch (err) {
-//         console.error(err);
-//         alert("Server error");
-//     }
-// }
 
 document.getElementById("signup-btn")?.addEventListener("click", async () => {
     const name = document.getElementById("name").value;
@@ -360,41 +383,100 @@ document.getElementById("login-btn")?.addEventListener("click", async () => {
 async function checkout() {
     const user_id = localStorage.getItem("user_id");
 
-    if (!user_id) {
-        alert("Login required");
+    const phone = document.getElementById("phone")?.value;
+    const address = document.getElementById("address")?.value;
+
+    if (!phone || !address) {
+        alert("Please fill all details");
         return;
     }
 
-    const res = await fetch(`/checkout/${user_id}`, {
-        method: "POST"
+    const res = await fetch(`${BASE_URL}/checkout/${user_id}`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ phone, address })
     });
 
     const data = await res.json();
 
     if (res.ok) {
         alert("Order placed successfully ✅");
-        window.location.reload();
+        window.location.href = "/order-success";
     } else {
         alert(data.error);
     }
 }
 
 async function loadOrders() {
+    const container = document.getElementById("orders-container");
+    if (!container) return;
+
     const user_id = localStorage.getItem("user_id");
 
-    const res = await fetch(`/orders/${user_id}`);
-    const orders = await res.json();
+    if (!user_id) {
+        container.innerHTML = "<p>Please login to view orders</p>";
+        return;
+    }
 
-    const container = document.getElementById("orders-container");
-    container.innerHTML = "";
+    try {
+        const res = await fetch(`${BASE_URL}/orders/${user_id}`);
 
-    orders.forEach(order => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-            <p>Product: ${order.product_id}</p>
-            <p>Quantity: ${order.quantity}</p>
-            <p>Total: ₹${order.total_price}</p>
-        `;
-        container.appendChild(div);
-    });
+        if (!res.ok) {
+            container.innerHTML = "<p>Failed to load orders</p>";
+            return;
+        }
+
+        const orders = await res.json();
+
+        if (orders.length === 0) {
+            container.innerHTML = "<p>No orders yet</p>";
+            return;
+        }
+
+        container.innerHTML = "";
+
+        orders.forEach(order => {
+            container.innerHTML += `
+            <div class="cart-item">
+
+                <div class="cart-left">
+                    <img 
+                        src="${order.image_url || 'https://via.placeholder.com/80'}"
+                        onerror="this.src='https://via.placeholder.com/80'"
+                    >
+
+                    <div class="cart-details">
+                        <h4>${order.product_name}</h4>
+                        <p>Qty: ${order.quantity}</p>
+                        <p>Total: ₹${order.total_price}</p>
+                    </div>
+                </div>
+
+                <div>
+                    <p><b>${order.order_status}</b></p>
+                    <p>${order.order_date ? new Date(order.order_date).toLocaleString() : ""}</p>                </div>
+
+            </div>
+            `;
+        });
+
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = "<p>Something went wrong</p>";
+    }
+}
+
+async function loadUserDetails() {
+    const user_id = localStorage.getItem("user_id");
+
+    const res = await fetch(`${BASE_URL}/user/${user_id}`);
+    const user = await res.json();
+
+    if (user.phone && document.getElementById("phone")) {
+    document.getElementById("phone").value = user.phone;
+}
+
+if (user.address && document.getElementById("address")) {
+    document.getElementById("address").value = user.address;
+}
 }

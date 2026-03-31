@@ -243,9 +243,42 @@ def get_orders(user_id):
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT o.order_id, o.product_id, o.quantity, o.total_price,
-               o.order_status, o.order_date,
-               p.product_name
+        SELECT 
+            o.order_id,
+            o.product_id,
+            o.quantity,
+            o.total_price,
+            o.order_status,
+            o.order_date,
+            p.product_name,
+            p.image_url,
+            p.seller_id
+        FROM orders o
+        JOIN products p ON o.product_id = p.product_id
+        WHERE o.user_id = %s OR p.seller_id = %s
+        ORDER BY o.order_date DESC
+    """, (user_id, user_id))
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+    return data
+
+def get_orders_by_user(user_id):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT 
+            o.order_id,
+            o.product_id,
+            o.quantity,
+            o.total_price,
+            o.order_status,
+            o.order_date,
+            p.product_name,
+            p.image_url
         FROM orders o
         JOIN products p ON o.product_id = p.product_id
         WHERE o.user_id = %s
@@ -256,21 +289,27 @@ def get_orders(user_id):
 
     cursor.close()
     conn.close()
+
     return data
 
-
-def process_checkout(user_id):
+def process_checkout(user_id, phone, address):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     try:
-        # 🔒 Lock rows to prevent race conditions
+        # update user details FIRST
+        cursor.execute("""
+            UPDATE users
+            SET phone = %s, address = %s
+            WHERE user_id = %s
+        """, (phone, address, user_id))
+
+        # get cart
         cursor.execute("""
             SELECT sc.product_id, sc.quantity, sc.price_at_addition, p.stock
             FROM shopping_cart sc
             JOIN products p ON sc.product_id = p.product_id
             WHERE sc.user_id = %s
-            FOR UPDATE
         """, (user_id,))
 
         items = cursor.fetchall()
@@ -278,7 +317,7 @@ def process_checkout(user_id):
         if not items:
             return {"status": "error", "message": "Cart is empty"}
 
-        # ✅ STOCK VALIDATION
+        # stock check
         for item in items:
             if item["quantity"] > item["stock"]:
                 return {
@@ -286,41 +325,32 @@ def process_checkout(user_id):
                     "message": f"Insufficient stock for product {item['product_id']}"
                 }
 
-        # ✅ CREATE ORDERS + UPDATE STOCK
+        # insert orders
         for item in items:
-            price = item["price_at_addition"]
-
-            # FIX: Decimal safe multiplication
-            if not isinstance(price, Decimal):
-                price = Decimal(price)
-
-            total = price * item["quantity"]
+            total = item["quantity"] * float(item["price_at_addition"])
 
             cursor.execute("""
-                INSERT INTO orders (user_id, product_id, quantity, total_price)
-                VALUES (%s, %s, %s, %s)
+                INSERT INTO orders (user_id, product_id, quantity, total_price, phone, address)
+                VALUES (%s, %s, %s, %s, %s, %s)
             """, (
                 user_id,
                 item["product_id"],
                 item["quantity"],
-                float(total)   # MySQL safe
+                total,
+                phone,
+                address
             ))
 
             cursor.execute("""
                 UPDATE products
                 SET stock = stock - %s
                 WHERE product_id = %s
-            """, (
-                item["quantity"],
-                item["product_id"]
-            ))
-            # ✅ CLEAR CART
-        cursor.execute("""
-            DELETE FROM shopping_cart WHERE user_id = %s
-        """, (user_id,))
+            """, (item["quantity"], item["product_id"]))
+
+        # clear cart
+        cursor.execute("DELETE FROM shopping_cart WHERE user_id = %s", (user_id,))
 
         conn.commit()
-
         return {"status": "success"}
 
     except Exception as e:
@@ -331,3 +361,35 @@ def process_checkout(user_id):
     finally:
         cursor.close()
         conn.close()
+
+def get_user_by_id(user_id):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT user_id, username, role, phone, address
+        FROM users
+        WHERE user_id = %s
+    """, (user_id,))
+
+    user = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return user
+
+def get_user_by_id(user_id):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT user_id, username, role, phone, address
+        FROM users
+        WHERE user_id = %s
+    """, (user_id,))
+
+    user = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return user
