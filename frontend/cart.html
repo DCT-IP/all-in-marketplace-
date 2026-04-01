@@ -26,13 +26,47 @@
     </div>
 
 </div>
-<div class="checkout-form">
+<div class="checkout-form" id="checkoutForm" style="display: none;">
     <h3>Checkout Details</h3>
 
     <input id="phone" placeholder="Phone Number">
     <textarea id="address" placeholder="Address"></textarea>
 
-    <button onclick="checkout()">Place Order</button>
+<div class="checkout-section">
+    <h3>Payment Method</h3>
+
+    <div class="payment-options">
+
+        <label class="payment-card">
+            <input type="radio" name="payment" value="upi" checked>
+            <div class="payment-content">
+                <span class="payment-title">UPI</span>
+                <span class="payment-desc">Google Pay / PhonePe / Paytm</span>
+            </div>
+        </label>
+
+        <label class="payment-card">
+            <input type="radio" name="payment" value="card">
+            <div class="payment-content">
+                <span class="payment-title">Card</span>
+                <span class="payment-desc">Debit / Credit Card</span>
+            </div>
+        </label>
+
+        <label class="payment-card">
+            <input type="radio" name="payment" value="cod">
+            <div class="payment-content">
+                <span class="payment-title">Cash on Delivery</span>
+                <span class="payment-desc">Pay when you receive</span>
+            </div>
+        </label>
+
+    </div>
+</div>
+
+<button onclick="placeOrder()" class="checkout-btn">
+    Place Order
+</button>
 </div>
 
 <script defer src="{{ url_for('static', filename='script.js') }}"></script>

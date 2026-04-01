@@ -108,8 +108,13 @@ def checkout(user_id):
 
         phone = data.get("phone")
         address = data.get("address")
+        payment_method = data.get("payment_method")  
 
-        result = process_checkout(user_id, phone, address)
+
+        if not payment_method:
+            payment_method = "cod"
+
+        result = process_checkout(user_id, phone, address, payment_method)
 
         if result["status"] == "error":
             return jsonify({"error": result["message"]}), 400
@@ -124,13 +129,13 @@ def checkout(user_id):
 def get_user_details(user_id):
     return jsonify(get_user_by_id(user_id))
 
-@app.route("/order-success")
+@app.route("/order_success")
 def order_success():
     return render_template("order_success.html")
 
 @app.route("/orders-page")
 def orders_page():
-    return render_template("orders.html")
+    return render_template("orders-page.html")
 
 @app.route("/success")
 def success():

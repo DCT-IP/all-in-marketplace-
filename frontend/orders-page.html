@@ -4,21 +4,21 @@
     <title>My Orders</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
 
 <div class="cart-container">
     <h2>My Orders</h2>
-
     <div id="orders-container"></div>
 </div>
+
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    if (typeof loadOrders === "function") {
-        loadOrders();
-    }
+    loadOrders();  
 });
 </script>
+
 </body>
 </html>

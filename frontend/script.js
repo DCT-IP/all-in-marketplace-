@@ -380,11 +380,23 @@ document.getElementById("login-btn")?.addEventListener("click", async () => {
     }
 });
 
-async function checkout() {
+function checkout() {
+    const form = document.getElementById("checkoutForm");
+
+    form.style.display = "block";
+
+    window.scrollTo({
+        top: form.offsetTop,
+        behavior: "smooth"
+    });
+}
+
+async function placeOrder() {
     const user_id = localStorage.getItem("user_id");
 
     const phone = document.getElementById("phone")?.value;
     const address = document.getElementById("address")?.value;
+    const payment_method = document.querySelector('input[name="payment"]:checked')?.value;
 
     if (!phone || !address) {
         alert("Please fill all details");
@@ -394,14 +406,18 @@ async function checkout() {
     const res = await fetch(`${BASE_URL}/checkout/${user_id}`, {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ phone, address })
+        body: JSON.stringify({
+            phone,
+            address,
+            payment_method   
+        })
     });
 
     const data = await res.json();
 
     if (res.ok) {
         alert("Order placed successfully ✅");
-        window.location.href = "/order-success";
+        window.location.href = "/order_success"; 
     } else {
         alert(data.error);
     }
@@ -433,33 +449,37 @@ async function loadOrders() {
             return;
         }
 
-        container.innerHTML = "";
+        container.innerHTML = ""; // reset
 
-        orders.forEach(order => {
-            container.innerHTML += `
-            <div class="cart-item">
+orders.forEach(order => {
+    container.innerHTML += `
+    <div class="order-card">
 
-                <div class="cart-left">
-                    <img 
-                        src="${order.image_url || 'https://via.placeholder.com/80'}"
-                        onerror="this.src='https://via.placeholder.com/80'"
-                    >
+        <div class="order-left">
+            <img 
+                src="${order.image_url || 'https://via.placeholder.com/100'}"
+                onerror="this.src='https://via.placeholder.com/100'"
+            >
 
-                    <div class="cart-details">
-                        <h4>${order.product_name}</h4>
-                        <p>Qty: ${order.quantity}</p>
-                        <p>Total: ₹${order.total_price}</p>
-                    </div>
-                </div>
-
-                <div>
-                    <p><b>${order.order_status}</b></p>
-                    <p>${order.order_date ? new Date(order.order_date).toLocaleString() : ""}</p>                </div>
-
+            <div class="order-details">
+                <h4>${order.product_name || "Product"}</h4>
+                <p>Quantity: ${order.quantity}</p>
+                <p class="order-price">₹${order.total_price}</p>
             </div>
-            `;
-        });
+        </div>
 
+        <div class="order-right">
+            <span class="status ${order.order_status.toLowerCase()}">
+                ${order.order_status}
+            </span>
+            <p class="order-date">
+                ${order.order_date ? new Date(order.order_date).toLocaleString() : ""}
+            </p>
+        </div>
+
+    </div>
+    `;
+});
     } catch (err) {
         console.error(err);
         container.innerHTML = "<p>Something went wrong</p>";
@@ -479,4 +499,30 @@ async function loadUserDetails() {
 if (user.address && document.getElementById("address")) {
     document.getElementById("address").value = user.address;
 }
+}
+function simulatePayment(method) {
+    return new Promise((resolve) => {
+
+        showToast("Redirecting to payment...");
+
+        setTimeout(() => {
+            if (method === "upi") {
+                showToast("Approve payment in UPI app...");
+            } else if (method === "card") {
+                showToast("Processing card...");
+            }
+
+            setTimeout(() => {
+                const success = true; // always success for now
+
+                if (success) {
+                    showToast("Payment successful ✅");
+                    resolve(true);
+                } else {
+                    resolve(false);
+                }
+            }, 1500);
+
+        }, 1000);
+    });
 }

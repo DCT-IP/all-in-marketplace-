@@ -4,27 +4,29 @@
     <title>Order Success</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-</head>
-<body>
 
-<div class="success-container">
-    <div class="success-box">
-        <h2>✅ Order Placed Successfully</h2>
-        <p>Your order has been confirmed.</p>
+<body class="login-body">
 
-        <div class="success-actions">
-            <button onclick="goHome()">Continue Shopping</button>
-            <button onclick="viewOrders()">View Orders</button>
-        </div>
+<div class="login-container">
+    <div class="login-box" style="text-align:center">
+
+        <h2>🎉 Order Placed!</h2>
+        <p>Your order has been successfully placed.</p>
+
+        <button onclick="goHome()">Continue Shopping</button>
+        <button onclick="goOrders()" style="margin-top:10px;">
+            View Orders
+        </button>
+
     </div>
 </div>
 
+<script defer src="{{ url_for('static', filename='script.js') }}"></script>
 <script>
 function goHome() {
     window.location.href = "/";
 }
-
-function viewOrders() {
+function goOrders() {
     window.location.href = "/orders-page";
 }
 </script>

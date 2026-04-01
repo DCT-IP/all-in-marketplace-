@@ -292,7 +292,7 @@ def get_orders_by_user(user_id):
 
     return data
 
-def process_checkout(user_id, phone, address):
+def process_checkout(user_id, phone, address, payment_method):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -311,12 +311,12 @@ def process_checkout(user_id, phone, address):
             JOIN products p ON sc.product_id = p.product_id
             WHERE sc.user_id = %s
         """, (user_id,))
-
         items = cursor.fetchall()
 
         if not items:
+            conn.commit()
             return {"status": "error", "message": "Cart is empty"}
-
+        order_status = f"Placed ({payment_method.upper()})"
         # stock check
         for item in items:
             if item["quantity"] > item["stock"]:
@@ -324,21 +324,22 @@ def process_checkout(user_id, phone, address):
                     "status": "error",
                     "message": f"Insufficient stock for product {item['product_id']}"
                 }
-
+            
         # insert orders
         for item in items:
             total = item["quantity"] * float(item["price_at_addition"])
 
             cursor.execute("""
-                INSERT INTO orders (user_id, product_id, quantity, total_price, phone, address)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO orders (user_id, product_id, quantity, total_price, phone, address, order_status)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (
                 user_id,
                 item["product_id"],
                 item["quantity"],
                 total,
                 phone,
-                address
+                address,
+                order_status
             ))
 
             cursor.execute("""
