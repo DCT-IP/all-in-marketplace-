@@ -1,3 +1,7 @@
+/* Smooth UI */
+* {
+    transition: all 0.2s ease;
+}
 :root {
     --bg: #f1f3f6;
     --card: #ffffff;
@@ -11,6 +15,20 @@
     --accent-hover: #4338ca;
 
     --border: #e5e7eb;
+}
+.product-card,
+.cart-item,
+.stat-card,
+.order-card,
+.login-box {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.product-card:hover,
+.cart-item:hover,
+.order-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
 }
 
 body.dark {
@@ -39,7 +57,18 @@ body {
     font-family: 'Segoe UI', Arial, sans-serif;
     color: var(--text);
 }
+button {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
 
+button:hover {
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: scale(0.97);
+}
 /* NAVBAR */
 .navbar {
     background: var(--card);
@@ -48,8 +77,23 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+
+}
+input,
+textarea,
+select {
+    transition: all 0.2s ease;
 }
 
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(79,70,229,0.2);
+}
 .nav-actions {
     display: flex;
     gap: 12px;
@@ -124,14 +168,22 @@ body {
 .filter-btn {
     padding: 8px 16px;
     border-radius: 20px;
-    border: none;
-    background: #ddd;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.2s ease;
 }
 
 .filter-btn:hover {
-    background: #bbb;
+    background: var(--accent);
+    color: white;
+    transform: translateY(-1px);
+}
+.filter-btn.active {
+    background: var(--accent);
+    color: white;
+    font-weight: 600;
 }
 
 /* SECTION TITLE */
@@ -170,6 +222,10 @@ body {
     height: 160px;
     object-fit: cover;
     border-radius: 5px;
+    transition: transform 0.3s ease;
+}
+.product-card:hover img {
+    transform: scale(1.05);
 }
 
 /* BADGE */
@@ -182,6 +238,8 @@ body {
     padding: 5px 8px;
     font-size: 12px;
     border-radius: 5px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 /* TITLE */
@@ -279,17 +337,14 @@ body {
 }
 
 /* RESPONSIVE */
-@media (max-width: 768px) {
-    .navbar {
-        flex-wrap: wrap;
+@media (max-width: 600px) {
+    .top-controls {
+        flex-direction: column;
+        align-items: stretch;
     }
 
-    .navbar input {
+    .search-sort {
         width: 100%;
-    }
-
-    .products-grid {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
 }
 
@@ -337,7 +392,8 @@ body.dark input::placeholder {
 }
 
 /* BUTTONS (IMPORTANT: DO NOT OVERRIDE ALL) */
-body.dark button {
+/* only reset generic buttons, NOT form buttons */
+body.dark button:not(.add-to-cart):not(.checkout-btn):not(.dashboard-actions button):not(.login-box button) {
     background: inherit;
     color: inherit;
 }
@@ -453,11 +509,15 @@ body.dark .toast {
     border-radius: 5px;
     font-size: 15px;
     transition: 0.2s;
+    background: var(--accent);
+    color: white;
+    transition: all 0.2s ease;
 }
 
 /* Hover */
 .login-box button:hover {
-    background: #4338ca;
+    /* background: #4338ca; */
+    background: var(--accent-hover);
 }
 .login-box a {
     color: #4f46e5;
@@ -480,6 +540,13 @@ body.dark .toast {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 15px;
+}
+.category-bar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 15px;
+    flex-wrap: wrap;
 }
 
 .card {
@@ -527,7 +594,7 @@ body.dark .toast {
     gap: 15px;
 }
 
-.product-card {
+.dashboard-container .product-card {
     background: white;
     padding: 15px;
     border-radius: 10px;
@@ -744,9 +811,13 @@ body.dark #totalPrice {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    .checkout-form h3 {
-    margin-bottom: 5px;
+    background: var(--card);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
 }
+.checkout-form h3 {
+    margin-bottom: 5px;
 }
 
 .checkout-form input,
@@ -754,12 +825,11 @@ body.dark #totalPrice {
     width: 100%;
     padding: 12px;
     border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background: var(--card-bg);
-    color: var(--text-color);
+    border: 1px solid var(--border);   
+    background: var(--card);           /*  */
+    color: var(--text);                /*  */
     font-size: 14px;
 }
-
 /* fix textarea height */
 .checkout-form textarea {
     min-height: 80px;
@@ -793,16 +863,6 @@ body.dark #totalPrice {
 .orders-container {
     max-width: 900px;
     margin: 30px auto;
-}
-
-.order-card {
-    display: flex;
-    gap: 15px;
-    background: var(--card);
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
 }
 
 .order-card img {
@@ -857,6 +917,8 @@ body.dark #totalPrice {
     padding: 5px 10px;
     border-radius: 5px;
     font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .status.pending {
@@ -886,17 +948,21 @@ body.dark #totalPrice {
 .payment-card {
     display: flex;
     align-items: center;
-    background: var(--card-bg);
+    background: var(--card);
     padding: 12px 16px;
     border-radius: 10px;
     cursor: pointer;
-    border: 1px solid transparent;
+    border: 1px solid var(--border);
     transition: all 0.2s ease;
+}
+#orders-container {
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .payment-card:hover {
-    border: 1px solid var(--accent);
-    transform: scale(1.01);
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 /* hide radio */
@@ -933,4 +999,50 @@ body.dark #totalPrice {
 .payment-card input:checked + .payment-content::before {
     content: "✓ ";
     color: var(--accent);
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+body.dark ::-webkit-scrollbar-thumb {
+    background: #444;
+}
+
+.top-controls {
+    max-width: 900px;
+    margin: 15px auto;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+
+    background: var(--card);
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.top-controls input,
+.top-controls select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    flex: 1;
+}
+
+.search-sort {
+    display: flex;
+    gap: 10px;
+    flex: 1;
 }

@@ -42,6 +42,13 @@ CREATE TABLE IF NOT EXISTS shopping_cart (
     FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
+-- ================= PRODUCT IMAGES =================
+CREATE TABLE product_images (
+    image_id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    image_url TEXT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
 -- ================= SAFE UPDATES =================
 
 -- ORDERS TABLE FIX
@@ -102,3 +109,7 @@ SET @sql := IF(@col=0,
 'ALTER TABLE shopping_cart ADD COLUMN price_at_addition DECIMAL(10,2) NOT NULL AFTER quantity', 
 'SELECT "price_at_addition exists"');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+-- Add condition type to products
+ALTER TABLE products
+ADD COLUMN condition_type ENUM('fresh', 'refurbished') NOT NULL DEFAULT 'fresh';

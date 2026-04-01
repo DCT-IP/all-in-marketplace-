@@ -209,10 +209,15 @@ def get_seller_stats(seller_id):
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT COUNT(*) AS total_products
-        FROM products
-        WHERE seller_id = %s
-    """, (seller_id,))
+    SELECT 
+    COUNT(DISTINCT p.product_id) AS total_products,
+    SUM(o.total_price) AS total_revenue,
+    COUNT(o.order_id) AS total_orders,
+    AVG(o.total_price) AS avg_order_value
+FROM products p
+LEFT JOIN orders o ON p.product_id = o.product_id
+WHERE p.seller_id = %s;
+""", (seller_id,))
 
     stats = cursor.fetchone()
 
@@ -226,9 +231,27 @@ def get_seller_products(seller_id):
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT * FROM products
-        WHERE seller_id = %s
-    """, (seller_id,))
+    SELECT 
+        p.product_id,
+        p.product_name,
+        p.price,
+        p.stock,
+        p.category,
+        p.condition_type,   -- ✅ ADD THIS
+        COUNT(o.order_id) AS total_orders,
+        COALESCE(SUM(o.quantity), 0) AS total_units_sold
+    FROM products p
+    LEFT JOIN orders o ON p.product_id = o.product_id
+    WHERE p.seller_id = %s
+    GROUP BY 
+        p.product_id,
+        p.product_name,
+        p.price,
+        p.stock,
+        p.category,
+        p.condition_type
+    ORDER BY total_units_sold DESC
+""", (seller_id,))
 
     data = cursor.fetchall()
 
@@ -244,19 +267,20 @@ def get_orders(user_id):
 
     cursor.execute("""
         SELECT 
-            o.order_id,
-            o.product_id,
-            o.quantity,
-            o.total_price,
-            o.order_status,
-            o.order_date,
-            p.product_name,
-            p.image_url,
-            p.seller_id
-        FROM orders o
-        JOIN products p ON o.product_id = p.product_id
-        WHERE o.user_id = %s OR p.seller_id = %s
-        ORDER BY o.order_date DESC
+    o.order_id,
+    o.quantity,
+    o.total_price,
+    o.order_status,
+    o.order_date,
+    p.product_name,
+    p.image_url,
+    p.price,
+    u.username
+FROM orders o
+JOIN products p ON o.product_id = p.product_id
+JOIN users u ON o.user_id = u.user_id
+WHERE o.user_id = %s
+ORDER BY o.order_date DESC
     """, (user_id, user_id))
 
     data = cursor.fetchall()
@@ -342,11 +366,11 @@ def process_checkout(user_id, phone, address, payment_method):
                 order_status
             ))
 
-            cursor.execute("""
-                UPDATE products
-                SET stock = stock - %s
-                WHERE product_id = %s
-            """, (item["quantity"], item["product_id"]))
+            # cursor.execute("""
+            #     UPDATE products
+            #     SET stock = stock - %s
+            #     WHERE product_id = %s
+            # """, (item["quantity"], item["product_id"]))
 
         # clear cart
         cursor.execute("DELETE FROM shopping_cart WHERE user_id = %s", (user_id,))

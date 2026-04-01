@@ -7,16 +7,25 @@
 
 <body>
 
+<div class="navbar">
+    <div class="logo">My Orders</div>
+    <div class="nav-actions">
+        <button onclick="window.location.href='/'">Home</button>
+    </div>
+</div>
+
 <div class="cart-container">
     <h2>My Orders</h2>
     <div id="orders-container"></div>
 </div>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script defer src="{{ url_for('static', filename='script.js') }}"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    loadOrders();  
+    if (typeof loadOrders === "function") {
+        loadOrders();
+    }
 });
 </script>
 

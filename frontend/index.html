@@ -1,52 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>eMarket</title>
+    <title>OneStop</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
 <body>
 
 <nav class="navbar">
-    <div class="logo">eMarket</div>
-
-    <input type="text" id="searchBar" placeholder="Search products...">
-
-    <select id="sortSelect">
-        <option value="">Sort</option>
-        <option value="price_low">Price ↑</option>
-        <option value="price_high">Price ↓</option>
-        <option value="rating">Rating</option>
-    </select>
+    <div class="logo">OneStop</div>
 
     <div class="nav-actions">
         <button onclick="goToCart()">Cart</button>
-
-        <!-- Seller only -->
         <button id="dashboardBtn" style="display:none;">Dashboard</button>
-
-        <!-- Auth -->
         <div id="authArea"></div>
-
-        <!-- Theme -->
         <button onclick="toggleTheme()">🌙</button>
-
-        <!--Orders-->
-        <button onclick="window.location.href='/orders-page'">
-    My Orders
-</button>
+        <button onclick="window.location.href='/orders-page'">My Orders</button>
     </div>
 </nav>
 
+<div class="top-controls">
+    <div class="search-sort">
+        <input placeholder="Search products...">
+        <select>
+            <option>Sort</option>
+        </select>
+    </div>
+</div>
+
 <header class="hero">
-    <h1>Welcome to eMarket</h1>
+    <h1>Welcome to OneStop</h1>
 </header>
 
-<section class="filters">
+<section class="category-bar">
     <button class="filter-btn" data-category="all">All</button>
-<button class="filter-btn" data-category="mobiles">Mobiles</button>
-<button class="filter-btn" data-category="computers">Computers</button>
-<button class="filter-btn" data-category="accessories">Accessories</button>
+    <button class="filter-btn" data-category="mobiles">Mobiles</button>
+    <button class="filter-btn" data-category="computers">Computers</button>
+    <button class="filter-btn" data-category="accessories">Accessories</button>
 </section>
 
 <section>

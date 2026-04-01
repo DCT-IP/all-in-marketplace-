@@ -5,21 +5,43 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script defer src="{{ url_for('static', filename='seller.js') }}"></script>
 </head>
+
 <body>
 
-<h1>Seller Dashboard</h1>
-<h3>Welcome Seller</h3>
+<div class="navbar">
+    <div class="logo">Seller Dashboard</div>
 
-<button onclick="goHome()">Home</button>
-
-<div id="stats">
-    <h2>Analytics</h2>
-    <p>Total Products: <span id="total_products"></span></p>
-    <p>Total Orders: <span id="total_orders"></span></p>
+    <div class="nav-actions">
+        <button onclick="goHome()">Home</button>
+        <button onclick="toggleDarkMode()">🌙</button>
+    </div>
 </div>
 
-<h2>Your Products</h2>
-<div id="seller_products"></div>
+<div class="dashboard-container">
+
+    <!-- STATS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h4>Total Products</h4>
+            <p id="total_products">0</p>
+        </div>
+
+        <div class="stat-card">
+            <h4>Total Orders</h4>
+            <p id="total_orders">0</p>
+        </div>
+
+        <div class="stat-card">
+            <h4>Total Revenue</h4>
+            <p id="total_revenue">₹0</p>
+        </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <h2>Your Products</h2>
+    <div id="seller_products" class="products-grid"></div>
+
+</div>
 
 </body>
 </html>

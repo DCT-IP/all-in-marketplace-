@@ -8,15 +8,25 @@
 <body class="login-body">
   <div class="login-container">
     <div class="login-box">
-      <h2>Signup</h2>
-      <input id="name" placeholder="Name" required>
-      <input id="username" placeholder="Email" required>
-      <select id="role">
-        <option value="buyer">Buyer</option>
-        <option value="seller">Seller</option>
-      </select>
-      <button id="signup-btn">Signup</button>
+        <h2>Signup</h2>
+
+        <input id="name" placeholder="Name" required>
+        <input id="username" placeholder="Email" required>
+
+        <select id="role">
+            <option value="buyer">Buyer</option>
+            <option value="seller">Seller</option>
+        </select>
+
+        <button id="signup-btn">Signup</button>
+
+        <div style="text-align:center; margin-top:10px;">
+            <span>Already have an account?</span>
+            <button onclick="window.location.href='/login'">
+                Login
+            </button>
+        </div>
     </div>
-  </div>
+</div>
 </body>
 </html>
