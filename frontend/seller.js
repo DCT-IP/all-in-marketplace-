@@ -54,19 +54,41 @@ function renderRevenueChart(data) {
 
     const ctx = document.getElementById("revenueChart").getContext("2d");
 
-    new Chart(ctx, {
+    if (revenueChartInstance) revenueChartInstance.destroy();
+
+    revenueChartInstance = new Chart(ctx, {
         type: "line",
         data: {
             labels: labels,
             datasets: [{
                 label: "Revenue",
                 data: values,
+                borderColor: "#00d4ff",
+                backgroundColor: "rgba(0, 212, 255, 0.2)",
                 borderWidth: 2,
-                tension: 0.3
+                tension: 0.4,
+                fill: true
             }]
         },
         options: {
-            responsive: true
+            responsive: true,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#ffffff"
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: "#ffffff" },
+                    grid: { color: "rgba(255,255,255,0.1)" }
+                },
+                y: {
+                    ticks: { color: "#ffffff" },
+                    grid: { color: "rgba(255,255,255,0.1)" }
+                }
+            }
         }
     });
 }
@@ -88,8 +110,29 @@ function renderTopProductsChart(data) {
             datasets: [{
                 label: "Units Sold",
                 data: values,
+                backgroundColor: "rgba(106, 92, 255, 0.6)",
+                borderColor: "#6a5cff",
                 borderWidth: 1
             }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#ffffff"
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: "#ffffff" },
+                    grid: { color: "rgba(255,255,255,0.1)" }
+                },
+                y: {
+                    ticks: { color: "#ffffff" },
+                    grid: { color: "rgba(255,255,255,0.1)" }
+                }
+            }
         }
     });
 }

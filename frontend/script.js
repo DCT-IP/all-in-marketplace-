@@ -1,11 +1,117 @@
 const BASE_URL = "http://127.0.0.1:5000";
+// ===== GLOBAL LOGIN FUNCTION (FINAL FIX) =====
+async function login() {
+    console.log("🔥 login() running");
+
+    const username = document.getElementById("username")?.value;
+    const role = document.getElementById("role")?.value;
+
+    if (!username || !role) {
+        alert("Fill all fields");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${BASE_URL}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, role })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.user_id) {
+            localStorage.setItem("user_id", data.user_id);
+            localStorage.setItem("role", data.role);
+
+            window.location.href = data.role === "seller" ? "/seller" : "/";
+        } else {
+            alert(data.error || "Login failed");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Something went wrong");
+    }
+}
+// ===== GLOBAL CART FUNCTIONS FIX =====
+
+window.updateQty = async function(productId, change) {
+    await fetch(`${BASE_URL}/update_cart`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            user_id: localStorage.getItem("user_id"),
+            product_id: productId,
+            change
+        })
+    });
+
+    loadCart();
+};
+
+window.removeItem = async function(productId) {
+    await fetch(`${BASE_URL}/remove_from_cart`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            user_id: localStorage.getItem("user_id"),
+            product_id: productId
+        })
+    });
+
+    loadCart();
+};
+
+function checkout() {
+    const form = document.getElementById("checkoutForm");
+
+    form.style.display = "block";
+
+    window.scrollTo({
+        top: form.offsetTop,
+        behavior: "smooth"
+    });
+}
+window.placeOrder = async function() {
+    const user_id = localStorage.getItem("user_id");
+
+    const phone = document.getElementById("phone")?.value;
+    const address = document.getElementById("address")?.value;
+    const payment_method = document.querySelector('input[name="payment"]:checked')?.value;
+
+    if (!phone || !address) {
+        alert("Please fill all details");
+        return;
+    }
+
+    const res = await fetch(`${BASE_URL}/checkout/${user_id}`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            phone,
+            address,
+            payment_method
+        })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+        alert("Order placed successfully ✅");
+        window.location.href = "/order_success";
+    } else {
+        alert(data.error);
+    }
+};
 let currentIndex = 0;
 let sliderInterval;
+
 const protectedRoutes = ["/cart", "/seller"];
 const path = window.location.pathname;
 const role = localStorage.getItem("role");
 const userId = localStorage.getItem("user_id");
 
+// ===== ROUTE PROTECTION =====
 if (path.startsWith("/seller") && role !== "seller") {
     window.location.href = "/";
 }
@@ -15,44 +121,6 @@ if (isProtected && !userId) {
     window.location.href = "/login";
 }
 
-function renderAuthUI() {
-    const authArea = document.getElementById("authArea");
-    const dashboardBtn = document.getElementById("dashboardBtn");
-
-    if (!authArea) return;
-
-    const userId = localStorage.getItem("user_id");
-    const role = localStorage.getItem("role");
-
-    if (dashboardBtn) dashboardBtn.style.display = "none";
-
-    if (userId) {
-        authArea.innerHTML = `
-            <button class="logout-btn" onclick="logout()">Logout</button>
-        `;
-
-        if (role === "seller" && dashboardBtn) {
-            dashboardBtn.style.display = "inline-block";
-            dashboardBtn.onclick = () => {
-                window.location.href = "/seller";
-            };
-        }
-    } else {
-        authArea.innerHTML = `
-            <button class="login-btn" onclick="goToLogin()">Sign In</button>
-        `;
-    }
-}
-
-function goToLogin() {
-    window.location.href = "/login";
-}
-
-function logout() {
-    localStorage.clear();
-    window.location.href = "/";
-}
-
 function goToCart() {
     if (!localStorage.getItem("user_id")) {
         window.location.href = "/login";
@@ -60,19 +128,46 @@ function goToCart() {
     }
     window.location.href = "/cart";
 }
+// ===== AUTH UI =====
+function renderAuthUI() {
+    const authArea = document.getElementById("authArea");
+    const dashboardBtn = document.getElementById("dashboardBtn");
 
+    if (!authArea) return;
+
+    const uid = localStorage.getItem("user_id");
+    const role = localStorage.getItem("role");
+
+    if (dashboardBtn) dashboardBtn.style.display = "none";
+
+    if (uid) {
+        authArea.innerHTML = `<button class="logout-btn" onclick="logout()">Logout</button>`;
+
+        if (role === "seller" && dashboardBtn) {
+            dashboardBtn.style.display = "inline-block";
+            dashboardBtn.onclick = () => window.location.href = "/seller";
+        }
+    } else {
+        authArea.innerHTML = `<button class="login-btn" onclick="goToLogin()">Sign In</button>`;
+    }
+}
+
+function goToLogin() { window.location.href = "/login"; }
+function logout() { localStorage.clear(); window.location.href = "/"; }
+
+// ===== THEME =====
 function toggleTheme() {
     const isDark = document.body.classList.toggle("dark");
     localStorage.setItem("theme", isDark ? "dark" : "light");
 }
 
 function loadTheme() {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
+    if (localStorage.getItem("theme") === "dark") {
         document.body.classList.add("dark");
     }
 }
 
+// ===== TOAST =====
 function showToast(msg) {
     const toast = document.getElementById("toast");
     if (!toast) return;
@@ -83,10 +178,10 @@ function showToast(msg) {
     setTimeout(() => toast.classList.add("hidden"), 2000);
 }
 
+// ===== APP INIT =====
 window.addEventListener("load", () => {
     console.log("🔥 App Init Start");
 
-    // ===== CORE APP =====
     renderAuthUI();
     loadTheme();
     setupSearch();
@@ -96,90 +191,76 @@ window.addEventListener("load", () => {
     loadUserDetails();
     loadOrders();
 
-    // ===== AUTH FORMS =====
-    const loginForm = document.getElementById("login-form");
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            await login();
-        });
-    }
-
-    const signupForm = document.getElementById("signup-form");
-    if (signupForm) {
-        signupForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            await signup();
-        });
-    }
-
     // ===== SLIDER INIT =====
-    const user = JSON.parse(localStorage.getItem("user_id"));
     const slider = document.getElementById("slider");
+    const user = localStorage.getItem("user_id");
 
-    if (!slider) {
-        console.log("❌ Slider not found");
-        return;
-    }
-
-    if (!user) {
-        slider.style.display = "none";
-        console.log("❌ No user → slider hidden");
+    if (!slider || !user) {
+        if (slider) slider.style.display = "none";
         return;
     }
 
     slider.style.display = "block";
 
-    console.log("⏳ Waiting for products...");
+    const productsContainer = document.getElementById("products");
 
-    const waitForProducts = setInterval(() => {
-        const cards = document.querySelectorAll(".product-card");
+    // skeleton
+    if (!productsContainer.innerHTML.trim()) {
+    productsContainer.innerHTML = `
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+    `;
+}
+console.log("⏳ Waiting for products...");
 
-        console.log("Checking products:", cards.length);
+let tries = 0;
 
-        if (cards.length > 0) {
-            clearInterval(waitForProducts);
+const checkProducts = setInterval(() => {
+    const cards = document.querySelectorAll(".product-card");
 
-            console.log("✅ Products ready → loading slider");
+    console.log("Checking products:", cards.length);
 
-            loadSlider();
-        }
+    if (cards.length > 0) {
+        console.log("✅ Products ready → loading slider");
+
+        clearInterval(checkProducts);
+        loadSlider();
+    }
+
+    tries++;
+    if (tries > 50) {
+        console.error("❌ Products not found");
+        clearInterval(checkProducts);
+    }
+
     }, 100);
 });
 
+// ===== SEARCH =====
 function setupSearch() {
     const input = document.querySelector("input");
+    if (!input) return;
 
     input.addEventListener("input", () => {
         const value = input.value.toLowerCase();
 
         document.querySelectorAll(".product-card").forEach(card => {
             const name = card.dataset.name || "";
-
-            if (name.includes(value)) {
-                card.style.display = "block";
-            } else {
-                card.style.display = "none";
-            }
+            card.style.display = name.includes(value) ? "block" : "none";
         });
     });
 }
 
+// ===== FILTER =====
 function setupFilter() {
     document.querySelectorAll(".filter-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-
             const category = (btn.dataset.category || "").toLowerCase();
 
             document.querySelectorAll(".product-card").forEach(card => {
-                const cardCategory = (card.dataset.category || "").toLowerCase();
-
-                const match =
-                    category === "all" ||
-                    cardCategory === category ||
-                    cardCategory.includes(category) ||
-                    category.includes(cardCategory);
-
+                const c = (card.dataset.category || "").toLowerCase();
+                const match = category === "all" || c === category || c.includes(category);
                 card.style.display = match ? "block" : "none";
             });
 
@@ -189,28 +270,24 @@ function setupFilter() {
     });
 }
 
+// ===== SORT =====
 function setupSort() {
     const sortSelect = document.getElementById("sortSelect");
     if (!sortSelect) return;
 
     sortSelect.addEventListener("change", (e) => {
-        const val = e.target.value;
         const container = document.getElementById("products");
-        if (!container) return;
-
         const cards = Array.from(container.children);
 
         cards.sort((a, b) => {
             const priceA = parseFloat(a.dataset.finalPrice);
             const priceB = parseFloat(b.dataset.finalPrice);
-
             const ratingA = parseFloat(a.dataset.rating);
             const ratingB = parseFloat(b.dataset.rating);
 
-            if (val === "price_low") return priceA - priceB;
-            if (val === "price_high") return priceB - priceA;
-            if (val === "rating") return ratingB - ratingA;
-
+            if (e.target.value === "price_low") return priceA - priceB;
+            if (e.target.value === "price_high") return priceB - priceA;
+            if (e.target.value === "rating") return ratingB - ratingA;
             return 0;
         });
 
@@ -219,10 +296,16 @@ function setupSort() {
     });
 }
 
+// ===== ADD TO CART =====
 document.addEventListener("click", async (e) => {
-    const btn = e.target.closest(".add-to-cart");  // ✅ FIX
-
+    const btn = e.target.closest(".add-to-cart");
     if (!btn) return;
+
+    const productId = btn.getAttribute("data-product-id");
+    if (!productId) {
+        console.error("Missing product ID");
+        return;
+    }
 
     if (!localStorage.getItem("user_id")) {
         showToast("Login required ⚠️");
@@ -230,12 +313,8 @@ document.addEventListener("click", async (e) => {
         return;
     }
 
-    const productId = btn.dataset.productId;
-
-    if (!productId) {
-        console.error("Product ID missing");
-        return;
-    }
+    btn.innerText = "Adding...";
+    btn.disabled = true;
 
     await fetch(`${BASE_URL}/add_to_cart`, {
         method: "POST",
@@ -248,8 +327,14 @@ document.addEventListener("click", async (e) => {
     });
 
     showToast("Added to cart ✅");
+
+    setTimeout(() => {
+        btn.innerText = "Add to Cart";
+        btn.disabled = false;
+    }, 1000);
 });
 
+// ===== LOAD CART =====
 async function loadCart() {
     const container = document.getElementById("cartItems");
     if (!container) return;
@@ -258,18 +343,18 @@ async function loadCart() {
     const data = await res.json();
 
     let total = 0;
-    container.innerHTML = "";
+    let html = "";
 
     data.forEach(item => {
         const subtotal = item.price_at_addition * item.quantity;
         total += subtotal;
 
-        container.innerHTML += `
+        html += `
 <div class="cart-item">
 
     <div class="cart-left">
         <img src="${item.image_url}" 
-     onerror="this.src='https://via.placeholder.com/200x150?text=No+Image'">
+            onerror="this.src='https://via.placeholder.com/200x150?text=No+Image'">
 
         <div class="cart-details">
             <h4>${item.product_name}</h4>
@@ -291,302 +376,52 @@ async function loadCart() {
 `;
     });
 
+    container.innerHTML = html;
+
     const totalEl = document.getElementById("totalPrice");
     if (totalEl) totalEl.innerText = total;
 }
 
-async function signup() {
-    const username = document.getElementById("username")?.value;
-    const role = document.getElementById("role")?.value;
-
-    if (!username || !role) {
-        alert("Fill all fields");
-        return;
-    }
-
-    const res = await fetch(`${BASE_URL}/signup`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ username, role })
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.user_id) {
-        localStorage.setItem("user_id", data.user_id);
-        localStorage.setItem("role", data.role);
-
-        window.location.href = data.role === "seller" ? "/seller" : "/";
-    } else {
-        alert(data.error || "Signup failed");
-    }
-}
-
-async function login() {
-    const username = document.getElementById("username")?.value;
-    const role = document.getElementById("role")?.value;
-
-    if (!username || !role) {
-        alert("Fill all fields");
-        return;
-    }
-
-    const res = await fetch(`${BASE_URL}/login`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ username, role })
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.user_id) {
-        localStorage.setItem("user_id", data.user_id);
-        localStorage.setItem("role", data.role);
-
-        window.location.href = data.role === "seller" ? "/seller" : "/";
-    } else {
-        alert(data.error || "Login failed");
-    }
-}
-
-async function updateQty(productId, change) {
-    await fetch(`${BASE_URL}/update_cart`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            user_id: localStorage.getItem("user_id"),
-            product_id: productId,
-            change
-        })
-    });
-
-    loadCart();
-}
-
-async function removeItem(productId) {
-    await fetch(`${BASE_URL}/remove_from_cart`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            user_id: localStorage.getItem("user_id"),
-            product_id: productId
-        })
-    });
-
-    loadCart();
-}
-
-
-document.getElementById("signup-btn")?.addEventListener("click", async () => {
-    const name = document.getElementById("name").value;
-    const username = document.getElementById("username").value;
-    const role = document.getElementById("role").value;
-
-    if (!name || !username || !role) return alert("Fill all fields");
-
-    const res = await fetch(`${BASE_URL}/signup`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ name, username, role })
-    });
-
-    if (!res.ok) {
-        const text = await res.text();
-        console.error(text);
-        return alert("Signup failed");
-    }
-
-    const data = await res.json();
-
-    localStorage.setItem("user_id", data.user_id);
-    localStorage.setItem("role", data.role);
-
-    if (data.role === "seller") {
-        window.location.href = "/seller";
-    } else {
-        window.location.href = "/";
-    }
-});
-// -------- LOGIN --------
-document.getElementById("login-btn")?.addEventListener("click", async () => {
-    const username = document.getElementById("username").value;
-    const role = document.getElementById("role").value;
-
-    if (!username || !role) return alert("Fill all fields");
-
-    const res = await fetch(`${BASE_URL}/login`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({ username, role })
-    });
-
-    const data = await res.json();
-
-    if (res.ok && data.user_id) {
-        localStorage.setItem("user_id", data.user_id);
-        localStorage.setItem("role", data.role);
-
-        if (data.role === "seller") {
-            window.location.href = "/seller";
-        } else {
-            window.location.href = "/";
-        }
-    } else {
-        alert(data.error || "Login failed");
-    }
-});
-
-function checkout() {
-    const form = document.getElementById("checkoutForm");
-
-    form.style.display = "block";
-
-    window.scrollTo({
-        top: form.offsetTop,
-        behavior: "smooth"
-    });
-}
-
-async function placeOrder() {
-    const user_id = localStorage.getItem("user_id");
-
-    const phone = document.getElementById("phone")?.value;
-    const address = document.getElementById("address")?.value;
-    const payment_method = document.querySelector('input[name="payment"]:checked')?.value;
-
-    if (!phone || !address) {
-        alert("Please fill all details");
-        return;
-    }
-
-    const res = await fetch(`${BASE_URL}/checkout/${user_id}`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            phone,
-            address,
-            payment_method   
-        })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-        alert("Order placed successfully ✅");
-        window.location.href = "/order_success"; 
-    } else {
-        alert(data.error);
-    }
-}
-
+// ===== LOAD ORDERS =====
 async function loadOrders() {
     const container = document.getElementById("orders-container");
     if (!container) return;
 
-    const user_id = localStorage.getItem("user_id");
+    const res = await fetch(`${BASE_URL}/orders/${localStorage.getItem("user_id")}`);
+    const orders = await res.json();
 
-    if (!user_id) {
-        container.innerHTML = "<p>Please login to view orders</p>";
-        return;
-    }
+    let html = "";
 
-    try {
-        const res = await fetch(`${BASE_URL}/orders/${user_id}`);
+    orders.forEach(o => {
+        html += `
+        <div class="order-card">
+            <h4>${o.product_name}</h4>
+            <p>${o.quantity}</p>
+            <p>₹${o.total_price}</p>
+        </div>`;
+    });
 
-        if (!res.ok) {
-            container.innerHTML = "<p>Failed to load orders</p>";
-            return;
-        }
-
-        const orders = await res.json();
-
-        if (orders.length === 0) {
-            container.innerHTML = "<p>No orders yet</p>";
-            return;
-        }
-
-        container.innerHTML = ""; // reset
-
-orders.forEach(order => {
-    container.innerHTML += `
-    <div class="order-card">
-
-        <div class="order-left">
-            <img 
-                src="${order.image_url || 'https://via.placeholder.com/100'}"
-                onerror="this.src='https://via.placeholder.com/100'"
-            >
-
-            <div class="order-details">
-                <h4>${order.product_name || "Product"}</h4>
-                <p>Quantity: ${order.quantity}</p>
-                <p class="order-price">₹${order.total_price}</p>
-            </div>
-        </div>
-
-        <div class="order-right">
-            <span class="status ${order.order_status.toLowerCase()}">
-                ${order.order_status}
-            </span>
-            <p class="order-date">
-                ${order.order_date ? new Date(order.order_date).toLocaleString() : ""}
-            </p>
-        </div>
-
-    </div>
-    `;
-});
-    } catch (err) {
-        console.error(err);
-        container.innerHTML = "<p>Something went wrong</p>";
-    }
+    container.innerHTML = html || "<p>No orders yet</p>";
 }
 
+// ===== USER DETAILS (FIXED) =====
 async function loadUserDetails() {
-    const user_id = localStorage.getItem("user_id");
+    const id = localStorage.getItem("user_id");
+    if (!id) return;
 
-    const res = await fetch(`${BASE_URL}/user/${user_id}`);
+    const res = await fetch(`${BASE_URL}/user/${id}`);
     const user = await res.json();
 
-    if (user.phone && document.getElementById("phone")) {
-    document.getElementById("phone").value = user.phone;
+    const phoneEl = document.getElementById("phone");
+    if (user.phone && phoneEl) phoneEl.value = user.phone;
+
+    const addressEl = document.getElementById("address");
+    if (user.address && addressEl) addressEl.value = user.address;
 }
 
-if (user.address && document.getElementById("address")) {
-    document.getElementById("address").value = user.address;
-}
-}
-function simulatePayment(method) {
-    return new Promise((resolve) => {
-
-        showToast("Redirecting to payment...");
-
-        setTimeout(() => {
-            if (method === "upi") {
-                showToast("Approve payment in UPI app...");
-            } else if (method === "card") {
-                showToast("Processing card...");
-            }
-
-            setTimeout(() => {
-                const success = true; // always success for now
-
-                if (success) {
-                    showToast("Payment successful ✅");
-                    resolve(true);
-                } else {
-                    resolve(false);
-                }
-            }, 1500);
-
-        }, 1000);
-    });
-}
-
+// ===== SLIDER =====
 function loadSlider() {
     const container = document.getElementById("slides");
-    const user = JSON.parse(localStorage.getItem("user"));
-
     if (!container) return;
 
     const cards = document.querySelectorAll(".product-card");
@@ -594,46 +429,30 @@ function loadSlider() {
 
     let slides = [];
 
-    // ===== 1. LAST PURCHASE (if exists)
-    if (user && user.last_item_purchased) {
-        const match = [...cards].find(card => {
-            return card.querySelector(".add-to-cart")?.dataset.productId == user.last_item_purchased;
-        });
+    const topRated = [...cards].sort((a, b) => b.dataset.rating - a.dataset.rating)[0];
+    if (topRated) slides.push(buildSlide(topRated, "Top Rated"));
 
-        if (match) {
-            slides.push(buildSlide(match, "Your Last Purchase"));
-        }
-    }
-
-    // ===== 2. TOP RATED PRODUCT
-    const topRated = [...cards].sort((a, b) => {
-        return (b.dataset.rating || 0) - (a.dataset.rating || 0);
-    })[0];
-
-    if (topRated) {
-        slides.push(buildSlide(topRated, "Top Rated"));
-    }
-
-    // ===== 3. RANDOM PRODUCTS (fill remaining)
     for (let i = 0; i < cards.length && slides.length < 4; i++) {
         slides.push(buildSlide(cards[i], "Recommended"));
     }
 
     container.innerHTML = slides.join("");
-
     setupDots(slides.length);
     startSlider();
-    addSwipe();
 }
 
+// ===== SAFE SLIDE BUILDER =====
 function buildSlide(card, label) {
-    const name = card.querySelector("h3")?.innerText;
-    const img = card.querySelector("img")?.src;
-    const btn = card.querySelector(".add-to-cart");
-    const id = btn ? btn.getAttribute("data-product-id") : null;
+    const nameEl = card.querySelector("h3");
+    const imgEl = card.querySelector("img");
+    const btnEl = card.querySelector(".add-to-cart");
+
+    const name = nameEl ? nameEl.innerText : "Product";
+    const img = imgEl ? imgEl.src : "https://via.placeholder.com/300";
+    const id = btnEl ? btnEl.getAttribute("data-product-id") : null;
 
     if (!id) {
-        console.error("Missing product ID in slide");
+        console.error("❌ Missing product ID in slider");
         return "";
     }
 
@@ -649,7 +468,7 @@ function buildSlide(card, label) {
         </div>
     </div>`;
 }
-
+// ===== SLIDER CONTROLS =====
 function nextSlide() {
     const slides = document.querySelectorAll(".slide");
     const container = document.getElementById("slides");
@@ -658,8 +477,6 @@ function nextSlide() {
 
     currentIndex = (currentIndex + 1) % slides.length;
     container.style.transform = `translateX(-${currentIndex * 100}%)`;
-
-    updateDots();
 }
 
 function prevSlide() {
@@ -690,71 +507,87 @@ function setupDots(count) {
     dotsContainer.innerHTML = html;
     updateDots();
 }
-function goToSlide(index) {
-    const container = document.getElementById("slides");
 
-    currentIndex = index;
-    container.style.transform = `translateX(-${index * 100}%)`;
-
-    updateDots();
-}
 function updateDots() {
     document.querySelectorAll(".dot").forEach((d, i) => {
         d.classList.toggle("active", i === currentIndex);
     });
 }
-function addSwipe() {
-    let startX = 0;
 
-    const slider = document.getElementById("slider");
-
-    slider.addEventListener("touchstart", (e) => {
-        startX = e.touches[0].clientX;
-    });
-
-    slider.addEventListener("touchend", (e) => {
-        let endX = e.changedTouches[0].clientX;
-
-        if (startX - endX > 50) nextSlide();
-        if (endX - startX > 50) prevSlide();
-    });
+function goToSlide(i) {
+    currentIndex = i;
+    document.getElementById("slides").style.transform = `translateX(-${i * 100}%)`;
 }
-function getCategoryImage(category) {
-    const map = {
-        mobiles: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9",
-        computers: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8",
-        audio: "https://images.unsplash.com/photo-1518441902117-8f4b8b8b0d64",
-        tvs: "https://images.unsplash.com/photo-1593784991095-a205069470b6",
-        cameras: "https://images.unsplash.com/photo-1519183071298-a2962be96a4c"
-    };
-    return map[category?.toLowerCase()] || "https://picsum.photos/900/300";
-}
-function addToCart(productId) {
-    const user_id = localStorage.getItem("user_id");
 
-    if (!user_id) {
-        showToast("Login required");
-        return;
+// ===== CURSOR GLOW =====
+document.addEventListener("mousemove", (e) => {
+    document.body.style.setProperty("--cursor-x", e.clientX + "px");
+    document.body.style.setProperty("--cursor-y", e.clientY + "px");
+});
+
+// ===== SAFE LOGIN BINDING (NON-BREAKING) =====
+document.addEventListener("DOMContentLoaded", () => {
+    const loginBtn = document.getElementById("login-btn");
+
+    if (loginBtn) {
+        loginBtn.addEventListener("click", async () => {
+            console.log("🔥 Login button clicked");
+            await login();
+        });
     }
+});
 
-    fetch(`${BASE_URL}/add_to_cart`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            user_id: user_id,
-            product_id: productId,
-            quantity: 1
-        })
-    })
-    .then(res => res.json())
-    .then(() => {
-        showToast("Added to cart ✅");
-        loadCart();
-    })
-    .catch(err => {
-        console.error(err);
-        showToast("Failed to add ❌");
+// ---------- SIGNUP ----------
+const signupBtn = document.getElementById("signup-btn");
+
+if (signupBtn) {
+    signupBtn.addEventListener("click", async () => {
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("username").value.trim();
+        const role = document.getElementById("role").value;
+
+        // Basic validation
+        if (!name || !email) {
+            alert("Please fill all fields");
+            return;
+        }
+
+        try {
+            const res = await fetch("http://127.0.0.1:5000/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: name,
+                    username: email,
+                    role: role
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // Save user locally (consistent with your auth system)
+                localStorage.setItem("user_id", data.user_id);
+                localStorage.setItem("role", data.role);
+
+                alert("Signup successful!");
+
+                // Redirect based on role
+                if (data.role === "seller") {
+                    window.location.href = "/dashboard";
+                } else {
+                    window.location.href = "/";
+                }
+
+            } else {
+                alert(data.error || "Signup failed");
+            }
+
+        } catch (err) {
+            console.error(err);
+            alert("Server error");
+        }
     });
 }

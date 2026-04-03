@@ -3,18 +3,12 @@
     transition: all 0.2s ease;
 }
 :root {
-    --bg: #f1f3f6;
-    --card: #ffffff;
-    --text: #111827;
-    --muted: #6b7280;
+    --bg: transparent;
+    --card: transparent;
+    --text: #ffffff;
+    --muted: rgba(255,255,255,0.7);
 
-    --primary: #ff9900;
-    --primary-hover: #e68a00;
-
-    --accent: #4f46e5;
-    --accent-hover: #4338ca;
-
-    --border: #e5e7eb;
+    --border: rgba(255,255,255,0.2);
 }
 .product-card,
 .cart-item,
@@ -102,8 +96,11 @@ input,
 textarea,
 select {
     transition: all 0.2s ease;
+    color: white;
 }
-
+select option {
+    color: black;
+}
 input:focus,
 textarea:focus,
 select:focus {
@@ -159,19 +156,26 @@ select:focus {
 
 /* HERO */
 .hero {
-    background: linear-gradient(135deg, #1e90ff, #00c6ff);
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+
+    border-radius: 16px;
+    margin: 20px;
+    padding: 30px;
+
     color: white;
-    text-align: center;
-    padding: 50px 20px;
+    text-align: left;
+
+    box-shadow: 0 8px 30px rgba(0,0,0,0.25);
 }
 
 .hero h1 {
-    font-size: 32px;
+    font-size: 28px;
+    font-weight: 600;
 }
 
 .hero p {
-    margin-top: 10px;
-    font-size: 18px;
+    opacity: 0.8;
 }
 
 /* FILTERS */
@@ -1318,4 +1322,385 @@ body.dark ::-webkit-scrollbar-thumb {
 
 .dot.active {
     background: var(--accent);
+}
+
+/* ================= GLASS UI UPGRADE ================= */
+
+/* Background */
+body {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    background-attachment: fixed;
+}
+
+/* Subtle glow layer */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.15), transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1), transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    pointer-events: none;
+    border-radius: 50%;
+
+    background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 60%);
+
+    left: var(--cursor-x);
+    top: var(--cursor-y);
+
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+/* Animated gradient */
+body {
+    background: linear-gradient(270deg, #667eea, #764ba2, #6dd5ed, #2193b0);
+    background-size: 800% 800%;
+    animation: gradientShift 18s ease infinite;
+}
+
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+
+/* Glass base for all major containers */
+.product-card,
+.cart-item,
+.stat-card,
+.order-card,
+.login-box,
+.card,
+.chart-container,
+.top-controls,
+.checkout-form,
+.success-box,
+.payment-card,
+.category-bar,
+.navbar {
+    background: rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.18);
+
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+
+/* Navbar */
+.navbar {
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+/* Fake glass sidebar */
+.category-bar {
+    position: sticky;
+    top: 10px;
+    left: 10px;
+
+    max-width: 900px;
+    margin: 10px auto;
+
+    border-radius: 14px;
+    padding: 10px;
+
+    background: rgba(255,255,255,0.08) !important;
+    backdrop-filter: blur(14px);
+
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+}
+@media (min-width: 900px) {
+    .category-bar {
+        position: fixed;
+        left: 10px;
+        top: 100px;
+        flex-direction: column;
+        width: 180px;
+        height: auto;
+    }
+
+    .products-grid {
+        margin-left: 200px;
+    }
+}
+
+/* Product cards */
+.product-card {
+    background: rgba(255,255,255,0.1) !important;
+}
+
+.product-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow:
+        0 12px 40px rgba(0,0,0,0.3),
+        0 0 20px rgba(255,255,255,0.15);
+}
+
+/* Buttons */
+button,
+.add-to-cart,
+.checkout-btn,
+.dashboard-actions button {
+    background: rgba(255,255,255,0.15) !important;
+    border: 1px solid rgba(255,255,255,0.3);
+
+    backdrop-filter: blur(10px);
+    color: white;
+
+    border-radius: 10px;
+}
+
+button:hover,
+.add-to-cart:hover {
+    background: rgba(255,255,255,0.25) !important;
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+    background: rgba(255,255,255,0.12) !important;
+    border: 1px solid rgba(255,255,255,0.25);
+    backdrop-filter: blur(10px);
+
+    color: white;
+    border-radius: 10px;
+}
+
+input::placeholder {
+    color: rgba(255,255,255,0.7);
+}
+
+/* Slider */
+.slide {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.slide::after {
+    background: linear-gradient(
+        to right,
+        rgba(0,0,0,0.7),
+        rgba(0,0,0,0.2)
+    );
+}
+
+.slide-content {
+    backdrop-filter: blur(6px);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+/* Toast */
+.toast {
+    background: rgba(0,0,0,0.4) !important;
+    backdrop-filter: blur(10px);
+
+    border-radius: 10px;
+    color: white;
+
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+/* Category bar */
+.category-bar {
+    background: rgba(255,255,255,0.08) !important;
+}
+
+/* Dark mode upgrade */
+body.dark {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+}
+
+body.dark .product-card,
+body.dark .cart-item,
+body.dark .stat-card,
+body.dark .order-card,
+body.dark .login-box,
+body.dark .card,
+body.dark .navbar {
+    background: rgba(0,0,0,0.35) !important;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+/* Scrollbar polish */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+}
+
+body.dark ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+}
+/* Cursor glow layer */
+body::after {
+    content: "";
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    pointer-events: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 60%);
+    transform: translate(-50%, -50%);
+    mix-blend-mode: overlay;
+    z-index: 1;
+    transition: opacity 0.2s;
+}
+
+/* ===== GLASS LOADER ===== */
+.loader {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+
+    border: 3px solid rgba(255,255,255,0.2);
+    border-top: 3px solid rgba(255,255,255,0.8);
+
+    animation: spin 1s linear infinite;
+    margin: 40px auto;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* skeleton (better than spinner for products) */
+.skeleton-card {
+    height: 260px;
+    border-radius: 16px;
+
+    background: linear-gradient(
+        90deg,
+        rgba(255,255,255,0.08) 25%,
+        rgba(255,255,255,0.18) 37%,
+        rgba(255,255,255,0.08) 63%
+    );
+
+    background-size: 400% 100%;
+    animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+}
+
+.product-card {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== LOGIN PAGE FIX ===== */
+/* ===== LOGIN / SIGNUP GLASS UI FIX ===== */
+
+/* Page background */
+.login-body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: sans-serif;
+    color: white;
+}
+
+/* Center container */
+.login-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Glass card */
+.login-box {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    padding: 30px;
+    border-radius: 16px;
+    width: 320px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.4);
+    text-align: center;
+}
+
+/* Title */
+.login-box h2 {
+    margin-bottom: 20px;
+}
+
+/* Inputs + select */
+.login-box input,
+.login-box select {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
+    color: white;
+    outline: none;
+}
+
+/* Placeholder */
+.login-box input::placeholder {
+    color: rgba(255,255,255,0.6);
+}
+
+/* Buttons */
+.login-box button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #6a5cff, #00d4ff);
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* Hover effect */
+.login-box button:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+}
+
+/* Secondary buttons (signup/login switch) */
+.login-box button[type="button"] {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.3);
 }
