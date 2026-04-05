@@ -85,5 +85,5 @@ JOIN products p ON o.product_id = p.product_id;
 
 ## Made by
 - Dheeman Thakur - 240957082 - [DCT-IP](https://github.com/dheemanthakur45) - dheemanchaitanyathakur@gmail.com 
-- Sreevatsa Rajesh - 240957021
+- Sreevatsa Rajesh - 240957021 - [sreevatsarajesh](https://github.com/sreevatsarajesh) - sreevatsarajesh@gmail.com
 - Aryan Utekar - 240957086
